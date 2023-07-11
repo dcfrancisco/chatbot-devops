@@ -1,0 +1,6 @@
+Dockerfile
+.dockerignore
+venv
+.rasa
+__pycache__
+

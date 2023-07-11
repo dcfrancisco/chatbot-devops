@@ -1,0 +1,56 @@
+version: "3.1"
+
+intents:
+  - greet
+  - inform
+  - goodbye
+  - affirm
+  - deny
+  - bot_challenge
+
+entities:
+  - choice
+
+slots:
+  choice:
+    type: categorical
+    values:
+      - rock
+      - paper
+      - scissors
+    mappings:
+      - type: from_entity
+        entity: choice
+    job_name:
+      type: text
+
+responses:
+  utter_play:
+    - text: "Type 'rock', 'paper' or 'scissors' to play."
+
+  utter_play_again:
+    - text: "Do you want play again?"
+
+  utter_goodbye:
+    - text: "Bye"
+
+  utter_iamabot:
+    - text: "I am a bot, powered by Rasa."
+
+  utter_list_jobs:
+    - text: "Here are the available jobs: [job_1](job_1), [job_2](job_2), [job_3](job_3), ..."
+
+  utter_job_creation_confirm:
+    - text: "Job created successfully."
+
+  utter_job_creation_cancel:
+    - text: "Job creation process cancelled."
+
+actions:
+  - action_play_rpsls
+  - action_list_jobs
+  - action_create_job
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

@@ -1,0 +1,46 @@
+version: "3.1"
+
+rules:
+  - rule: Say goodbye anytime the user says goodbye
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - rule: Say 'I am a bot' anytime the user challenges
+    steps:
+      - intent: bot_challenge
+      - action: utter_iamabot
+  - rule: Handle list_jobs intent
+    steps:
+      - intent: list_jobs
+      - action: action_list_jobs
+
+  # - rule: Handle create_job intent
+  #   steps:
+  #     - intent: create_job
+  #     - action: action_ask_job_name
+
+  # - rule: Handle job_name intent
+  #   steps:
+  #     - intent: job_name
+  #     - action: action_ask_job_description
+
+  # - rule: Handle job_description intent
+  #   steps:
+  #     - intent: job_description
+  #     - action: action_ask_job_config
+
+  # - rule: Handle job_config intent
+  #   steps:
+  #     - intent: job_config
+  #     - action: action_confirm_create_job
+
+  - rule: Confirm job creation
+    steps:
+      - intent: confirm_create_job
+      - action: action_create_job
+
+  # - rule: Cancel job creation
+  #   steps:
+  #     - intent: cancel_create_job
+  #     - action: action_cancel_job_creation

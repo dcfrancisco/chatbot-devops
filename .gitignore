@@ -1,0 +1,57 @@
+# Node.js
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+
+# Build files
+/build
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+jenkins/keys
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+/volume
+
+# Editor-specific
+.vscode
+.idea
+*.swp
+*.swo
+*.sublime-workspace
+
+# Mac-specific
+.DS_Store
+
+# OS-generated files
+Thumbs.db
+.DS_Store?
+ehthumbs.db
+Desktop.ini
+
+# Misc
+node_modules
+/assets
+
+# rasa
+venv
+.rasa
+./rasa-app/models
+rasa/models
+rasa/results
+__pycache__

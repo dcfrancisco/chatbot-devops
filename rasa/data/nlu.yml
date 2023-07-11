@@ -1,0 +1,120 @@
+version: "3.1"
+
+nlu:
+  - intent: inform
+    examples: |
+      - [rock](choice)
+      - [paper](choice)
+      - [scissors](choice)
+
+  - intent: greet
+    examples: |
+      - hey
+      - hello
+      - hi
+      - hello there
+      - good morning
+      - good evening
+      - moin
+      - hey there
+      - let's go
+      - hey dude
+      - goodmorning
+      - goodevening
+      - good afternoon
+
+  - intent: goodbye
+    examples: |
+      - cu
+      - good by
+      - cee you later
+      - good night
+      - bye
+      - goodbye
+      - have a nice day
+      - see you around
+      - bye bye
+      - see you later
+
+  - intent: affirm
+    examples: |
+      - yes
+      - y
+      - indeed
+      - of course
+      - that sounds good
+      - correct
+
+  - intent: deny
+    examples: |
+      - no
+      - n
+      - never
+      - I don't think so
+      - don't like that
+      - no way
+      - not really
+
+  - intent: bot_challenge
+    examples: |
+      - are you a bot?
+      - are you a human?
+      - am I talking to a bot?
+      - am I talking to a human?
+
+  - intent: list_jobs
+    examples: |
+      - What are the available jobs?
+      - List all jobs
+      - Show me the list of jobs
+      - Which jobs are there?
+      - Get me the jobs
+
+  - intent: create_job
+    examples: |
+      - Create a new job
+      - I want to add a job
+      - Can you create a job?
+      - Help me make a new job
+      - Add a job to Jenkins
+      - I need to create a job
+
+  - intent: job_name
+    examples: |
+      - [job_name](job_name)
+      - {job_name}
+      - I want to create a job named [job_name](job_name)
+      - Create a job with the name {job_name}
+      - Add a job called {job_name}
+
+  - intent: job_description
+    examples: |
+      - [job_description](job_description)
+      - {job_description}
+      - The job should do [job_description](job_description)
+      - Description of the job: {job_description}
+      - The job's purpose is {job_description}
+
+  - intent: job_config
+    examples: |
+      - [job_config](job_config)
+      - {job_config}
+      - Here's the job configuration: [job_config](job_config)
+      - I have the job configuration: {job_config}
+      - The job's configuration is {job_config}
+
+  - intent: confirm_create_job
+    examples: |
+      - Yes, create the job
+      - Okay, go ahead and add it
+      - Create the job
+      - I confirm the job creation
+      - Please proceed with creating the job
+
+  - intent: cancel_create_job
+    examples: |
+      - No, cancel the job creation
+      - I changed my mind, don't create it
+      - Cancel the job creation process
+      - Stop creating the job
+      - I don't want to create the job anymore
