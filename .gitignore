@@ -47,6 +47,8 @@ Desktop.ini
 # Misc
 node_modules
 /assets
+.venv
+.venv313
 
 # rasa
 venv
