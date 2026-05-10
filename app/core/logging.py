@@ -2,6 +2,8 @@ import json
 import logging
 from typing import Any
 
+from app.observability.tracing.context import get_correlation_id, get_span_id, get_trace_id
+
 
 STANDARD_LOG_RECORD_FIELDS = {
     "args",
@@ -37,6 +39,15 @@ class JsonFormatter(logging.Formatter):
             "message": record.getMessage(),
             "time": self.formatTime(record, self.datefmt),
         }
+        trace_id = get_trace_id()
+        correlation_id = get_correlation_id()
+        span_id = get_span_id()
+        if trace_id is not None:
+            payload["trace_id"] = trace_id
+        if correlation_id is not None:
+            payload["correlation_id"] = correlation_id
+        if span_id is not None:
+            payload["span_id"] = span_id
         extras = {
             key: value
             for key, value in record.__dict__.items()

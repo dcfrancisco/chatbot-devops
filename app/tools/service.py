@@ -12,6 +12,7 @@ from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt,
 
 from app.core.logging import get_logger
 from app.models.api import ToolExecutionError, ToolExecutionRequest, ToolExecutionResponse, ToolExecutionTrace
+from app.observability.service import ObservabilityService
 from app.tools.base import ToolExecutionContext
 from app.tools.registry import ToolNotFoundError, ToolRegistry
 
@@ -20,8 +21,9 @@ RETRYABLE_EXCEPTIONS = (httpx.HTTPError, TimeoutError, asyncio.TimeoutError)
 
 
 class ToolExecutionService:
-    def __init__(self, tool_registry: ToolRegistry) -> None:
+    def __init__(self, tool_registry: ToolRegistry, observability_service: ObservabilityService) -> None:
         self._tool_registry = tool_registry
+        self._observability_service = observability_service
         self._logger = get_logger(__name__)
 
     def list_tools(self):
@@ -32,7 +34,7 @@ class ToolExecutionService:
 
     async def execute(self, session: AsyncSession, request: ToolExecutionRequest) -> ToolExecutionResponse:
         started_at = datetime.now(timezone.utc)
-        trace_id = str(uuid4())
+        trace_id = self._observability_service.current_trace_id() or str(uuid4())
         attempts = 0
 
         try:
@@ -82,19 +84,20 @@ class ToolExecutionService:
 
         try:
             result: dict[str, Any] | None = None
-            async for attempt in AsyncRetrying(
-                stop=stop_after_attempt(max(1, tool.retry_attempts)),
-                wait=wait_exponential(multiplier=0.5, min=0.5, max=4),
-                retry=retry_if_exception_type(RETRYABLE_EXCEPTIONS),
-                reraise=True,
-            ):
-                with attempt:
-                    attempts += 1
-                    async with asyncio.timeout(tool.timeout_seconds):
-                        result = await tool.execute(
-                            ToolExecutionContext(session=session, trace_id=trace_id),
-                            validated_arguments,
-                        )
+            async with self._observability_service.span("tool.execution.attempts", tool_name=tool.name):
+                async for attempt in AsyncRetrying(
+                    stop=stop_after_attempt(max(1, tool.retry_attempts)),
+                    wait=wait_exponential(multiplier=0.5, min=0.5, max=4),
+                    retry=retry_if_exception_type(RETRYABLE_EXCEPTIONS),
+                    reraise=True,
+                ):
+                    with attempt:
+                        attempts += 1
+                        async with asyncio.timeout(tool.timeout_seconds):
+                            result = await tool.execute(
+                                ToolExecutionContext(session=session, trace_id=trace_id),
+                                validated_arguments,
+                            )
             completed_at = datetime.now(timezone.utc)
             self._logger.info(
                 "tool_execution_completed",

@@ -18,7 +18,7 @@ from app.models.api import IngestDocument, IngestFilesystemSource, IngestRespons
 from app.rag.documents import ParsedDocument
 from app.rag.parsers import DocumentParser, SUPPORTED_EXTENSIONS
 from app.rag.splitters import IntelligentChunker
-from app.services.llm import OpenAICompatibleProvider
+from app.llm.base import BaseLLMProvider
 
 
 @dataclass(slots=True)
@@ -34,7 +34,7 @@ class IngestionStats:
 
 
 class IngestionService:
-    def __init__(self, settings: Settings, llm_provider: OpenAICompatibleProvider) -> None:
+    def __init__(self, settings: Settings, llm_provider: BaseLLMProvider) -> None:
         self._settings = settings
         self._llm_provider = llm_provider
         self._parser = DocumentParser()
