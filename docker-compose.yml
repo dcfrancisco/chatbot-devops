@@ -1,20 +1,164 @@
-version: "3"
 services:
-  mongodb:
-    image: mongo:5.0.5
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: local-ai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-devops_assistant}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "27017:27017"
-      
-  jenkins:
-    build:
-      context: ./jenkins
-    container_name: jenkins-instance
-    ports:
-      - "8080:8080"
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-devops_assistant}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
     volumes:
-      - ./volume/jenkins-data:/var/jenkins_home
-    restart: always
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: local-ai-backend
+    env_file:
+      - .env
+    environment:
+      APP_HOST: ${APP_HOST:-0.0.0.0}
+      APP_PORT: ${APP_PORT:-8000}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-devops_assistant}
+      LLM_API_BASE_URL: http://ollama:11434/v1
+      JENKINS_BASE_URL: ${JENKINS_BASE_URL:-http://jenkins:8080}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+        required: false
+    command: ["./scripts/entrypoint.sh"]
+    working_dir: /app
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 35s
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/streamlit/Dockerfile
+    container_name: local-ai-streamlit
+    env_file:
+      - .env
+    environment:
+      STREAMLIT_API_BASE_URL: ${STREAMLIT_API_BASE_URL:-http://backend:8000}
+    ports:
+      - "${STREAMLIT_PORT:-8501}:8501"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=5)"
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.6.5}
+    container_name: local-ai-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - ollama list >/dev/null 2>&1
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+  ollama-init:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.6.5}
+    container_name: local-ai-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - -lc
+      - until ollama list >/dev/null 2>&1; do sleep 2; done; ollama pull ${LLM_CHAT_MODEL}; ollama pull ${LLM_EMBEDDING_MODEL}
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: "no"
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: local-ai-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    profiles: ["cache"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:9.3
+    container_name: local-ai-pgadmin
+    profiles: ["admin"]
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local.dev}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1/misc/ping', timeout=5)"
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    restart: unless-stopped
 
 volumes:
-  jenkins-data:
-  jenkins-builds:
+  postgres-data:
+  ollama-data:
+  redis-data:
+  pgadmin-data:
