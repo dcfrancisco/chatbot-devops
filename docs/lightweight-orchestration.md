@@ -12,14 +12,14 @@ This assistant uses a single-turn orchestration flow designed for local-first en
 
 ## Flow
 
-```text
-User Message
--> semantic retrieval
--> memory lookup
--> deterministic tool decision
--> optional single tool execution
--> response synthesis
--> citations + persistence
+```mermaid
+flowchart TD
+	A[User Message] --> B[Semantic Retrieval]
+	B --> C[Memory Lookup]
+	C --> D[Deterministic Tool Decision]
+	D --> E[Optional Single Tool Execution]
+	E --> F[Response Synthesis]
+	F --> G[Citations and Persistence]
 ```
 
 ## Components

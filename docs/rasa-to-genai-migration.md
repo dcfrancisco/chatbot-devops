@@ -244,55 +244,56 @@ flowchart LR
 
 ## Proposed Target Folder Structure
 
-```text
-chatbot-devops/
-├── apps/
-│   ├── api/
-│   │   ├── app/
-│   │   │   ├── main.py
-│   │   │   ├── api/
-│   │   │   ├── core/
-│   │   │   ├── db/
-│   │   │   ├── models/
-│   │   │   ├── orchestration/
-│   │   │   ├── retrieval/
-│   │   │   ├── services/
-│   │   │   └── tools/
-│   │   ├── tests/
-│   │   └── Dockerfile
-│   └── ui/
-│       ├── streamlit_app.py
-│       └── Dockerfile
-├── data/
-│   ├── raw/
-│   ├── curated/
-│   └── processed/
-├── docs/
-│   └── rasa-to-genai-migration.md
-├── infra/
-│   ├── compose/
-│   │   ├── docker-compose.yml
-│   │   └── .env.example
-│   ├── db/
-│   │   ├── migrations/
-│   │   └── init.sql
-│   └── ollama/
-│       └── Modelfile
-├── jenkins/
-│   ├── Dockerfile
-│   ├── plugins.txt
-│   └── settings.xml
-├── scripts/
-│   ├── ingest_documents.py
-│   ├── bootstrap_local.sh
-│   └── smoke_test.sh
-├── tests/
-│   ├── integration/
-│   ├── retrieval/
-│   └── tools/
-├── .gitignore
-├── README.md
-└── pyproject.toml
+```mermaid
+mindmap
+   root((chatbot-devops))
+      apps
+         api
+            app
+               main.py
+               api
+               core
+               db
+               models
+               orchestration
+               retrieval
+               services
+               tools
+            tests
+            Dockerfile
+         ui
+            streamlit_app.py
+            Dockerfile
+      data
+         raw
+         curated
+         processed
+      docs
+         rasa-to-genai-migration.md
+      infra
+         compose
+            docker-compose.yml
+            .env.example
+         db
+            migrations
+            init.sql
+         ollama
+            Modelfile
+      jenkins
+         Dockerfile
+         plugins.txt
+         settings.xml
+      scripts
+         ingest_documents.py
+         bootstrap_local.sh
+         smoke_test.sh
+      tests
+         integration
+         retrieval
+         tools
+      .gitignore
+      README.md
+      pyproject.toml
 ```
 
 ## Component Design Recommendations

@@ -140,14 +140,14 @@ curl -X POST http://localhost:8000/chat \
 
 The chat flow is intentionally simple and maintainable:
 
-```text
-User Message
--> semantic retrieval
--> conversation memory lookup
--> deterministic tool decision
--> optional single tool execution
--> response synthesis
--> citations + persistence
+```mermaid
+flowchart TD
+  A[User Message] --> B[Semantic Retrieval]
+  B --> C[Conversation Memory Lookup]
+  C --> D[Deterministic Tool Decision]
+  D --> E[Optional Single Tool Execution]
+  E --> F[Response Synthesis]
+  F --> G[Citations and Persistence]
 ```
 
 The Streamlit UI consumes the same FastAPI endpoints and adds:
