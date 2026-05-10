@@ -2,7 +2,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.services.api_service import ApiService
+from app.integrations.api.service import ApiService
 from app.tools.base import Tool, ToolExecutionContext
 
 

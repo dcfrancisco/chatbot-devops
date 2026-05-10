@@ -14,6 +14,12 @@ Production-ready FastAPI backend for a local AI DevOps assistant with PostgreSQL
 - `app/core/` configuration, logging, and service container
 - `alembic/` database migrations
 
+## Key Docs
+
+- `docs/enterprise-runtime-roadmap.md` phased roadmap for evolving the platform into an enterprise modular AI runtime
+- `docs/modular-runtime-platform.md` target runtime architecture, registries, and module boundaries
+- `docs/rasa-to-genai-migration.md` migration context from the legacy Rasa implementation
+
 ## Stack
 
 - FastAPI

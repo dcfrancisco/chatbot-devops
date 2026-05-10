@@ -18,6 +18,7 @@ class Citation(BaseModel):
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1)
     conversation_id: str | None = None
+    agent_name: str | None = Field(default=None, min_length=1)
     stream: bool = False
 
 
@@ -27,11 +28,22 @@ class ToolInvocationSummary(BaseModel):
     trace_id: str
 
 
+class GovernanceSummary(BaseModel):
+    allowed: bool
+    reason: str
+    requires_approval: bool = False
+    requested_tool: str | None = None
+    approval_status: str | None = None
+    audit_record_id: str | None = None
+    violations: list[str] = Field(default_factory=list)
+
+
 class OrchestrationMetadata(BaseModel):
     trace_id: str
     retrieval_count: int = 0
     memory_count: int = 0
     tool_invocation: ToolInvocationSummary | None = None
+    governance: GovernanceSummary | None = None
 
 
 class ChatResponse(BaseModel):

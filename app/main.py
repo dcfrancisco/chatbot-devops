@@ -6,6 +6,7 @@ from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.container import build_container
 from app.core.logging import configure_logging, get_logger
+from app.observability.tracing.middleware import TraceContextMiddleware
 
 
 @asynccontextmanager
@@ -17,8 +18,7 @@ async def lifespan(_application: FastAPI):
     logger = get_logger(__name__)
     logger.info("application_startup")
     yield
-    await _application.state.container.api_service.aclose()
-    await _application.state.container.jenkins_service.aclose()
+    await _application.state.container.aclose()
     logger.info("application_shutdown")
 
 
@@ -30,6 +30,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     application.state.settings = settings
+    application.add_middleware(TraceContextMiddleware)
     application.include_router(api_router)
     return application
 

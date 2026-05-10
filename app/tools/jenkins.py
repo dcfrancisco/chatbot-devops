@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
-from app.services.jenkins_service import JenkinsService
+from app.integrations.jenkins.service import JenkinsService
 from app.tools.base import Tool, ToolExecutionContext
 
 

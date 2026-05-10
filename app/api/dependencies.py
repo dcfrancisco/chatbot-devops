@@ -1,11 +1,11 @@
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.container import ServiceContainer
+from app.orchestration.runtime import RuntimePlatform
 from app.db.session import get_db_session
 
 
-def get_container(request: Request) -> ServiceContainer:
+def get_container(request: Request) -> RuntimePlatform:
     return request.app.state.container
 
 

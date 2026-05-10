@@ -5,8 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
 from app.db.models import Document, DocumentChunk, Source
+from app.llm.base import BaseLLMProvider
 from app.models.api import Citation
-from app.services.llm import OpenAICompatibleProvider
+from app.observability.service import ObservabilityService
 
 
 @dataclass(slots=True)
@@ -16,12 +17,14 @@ class RetrievalResult:
 
 
 class RetrieverService:
-    def __init__(self, settings: Settings, llm_provider: OpenAICompatibleProvider) -> None:
+    def __init__(self, settings: Settings, llm_provider: BaseLLMProvider, observability_service: ObservabilityService) -> None:
         self._settings = settings
         self._llm_provider = llm_provider
+        self._observability_service = observability_service
 
     async def search(self, session: AsyncSession, query: str, limit: int | None = None) -> RetrievalResult:
-        query_embedding = (await self._llm_provider.embed_texts([query]))[0]
+        async with self._observability_service.span("retrieval.embed_query", top_k=limit or self._settings.retrieval_top_k):
+            query_embedding = (await self._llm_provider.embed_texts([query]))[0]
         similarity = DocumentChunk.embedding.cosine_distance(query_embedding)
         statement: Select[tuple[DocumentChunk, Document, Source, float]] = (
             select(DocumentChunk, Document, Source, similarity.label("score"))
@@ -30,7 +33,8 @@ class RetrieverService:
             .order_by(similarity)
             .limit(limit or self._settings.retrieval_top_k)
         )
-        result = await session.execute(statement)
+        async with self._observability_service.span("retrieval.query_vector_store"):
+            result = await session.execute(statement)
         rows = result.all()
 
         citations: list[Citation] = []
@@ -52,4 +56,5 @@ class RetrieverService:
                 f"[Source: {document.title} | {document.source_id} | {source.source_key} | chunk {chunk.chunk_index}]\n{chunk.content}"
             )
 
+        self._observability_service.increment("retrieval.search.calls", citations=len(citations))
         return RetrievalResult(citations=citations, context_blocks=context_blocks)
