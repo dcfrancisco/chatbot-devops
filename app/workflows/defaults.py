@@ -1,7 +1,4 @@
-from app.workflows.base import BaseWorkflow
+from app.workflows.templates.defaults import ChatWorkflow
 
 
-class ChatWorkflow(BaseWorkflow):
-    name = "chat-turn"
-    description = "Default workflow for a single retrieval-first conversational turn."
-    tags = ("chat", "retrieval", "tools", "memory")
+__all__ = ["ChatWorkflow"]

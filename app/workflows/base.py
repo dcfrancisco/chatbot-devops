@@ -1,10 +1,6 @@
-from abc import ABC
+from app.workflows.definitions import WorkflowDefinition
 
 
-class BaseWorkflow(ABC):
-    name: str
-    description: str
-    tags: tuple[str, ...] = ()
+BaseWorkflow = WorkflowDefinition
 
-    def metadata(self) -> dict[str, object]:
-        return {"tags": list(self.tags)}
+__all__ = ["BaseWorkflow"]

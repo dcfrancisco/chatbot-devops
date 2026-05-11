@@ -8,6 +8,7 @@ from app.db.models import Document, DocumentChunk, Source
 from app.llm.base import BaseLLMProvider
 from app.models.api import Citation
 from app.observability.service import ObservabilityService
+from app.observability.tracing.models import SpanKind
 
 
 @dataclass(slots=True)
@@ -23,7 +24,12 @@ class RetrieverService:
         self._observability_service = observability_service
 
     async def search(self, session: AsyncSession, query: str, limit: int | None = None) -> RetrievalResult:
-        async with self._observability_service.span("retrieval.embed_query", top_k=limit or self._settings.retrieval_top_k):
+        async with self._observability_service.span(
+            "retrieval.embed_query",
+            kind=SpanKind.KB_RETRIEVAL,
+            component="rag",
+            top_k=limit or self._settings.retrieval_top_k,
+        ):
             query_embedding = (await self._llm_provider.embed_texts([query]))[0]
         similarity = DocumentChunk.embedding.cosine_distance(query_embedding)
         statement: Select[tuple[DocumentChunk, Document, Source, float]] = (
@@ -33,7 +39,11 @@ class RetrieverService:
             .order_by(similarity)
             .limit(limit or self._settings.retrieval_top_k)
         )
-        async with self._observability_service.span("retrieval.query_vector_store"):
+        async with self._observability_service.span(
+            "retrieval.query_vector_store",
+            kind=SpanKind.KB_RETRIEVAL,
+            component="rag",
+        ):
             result = await session.execute(statement)
         rows = result.all()
 

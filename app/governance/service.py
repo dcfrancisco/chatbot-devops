@@ -5,6 +5,8 @@ from app.governance.approvals import ApprovalRequest, ApprovalResolution, Approv
 from app.governance.audits import AuditRecord, AuditService
 from app.governance.base import GovernanceContext, GovernanceDecision
 from app.governance.dif import DIFService
+from app.governance.interceptors import GovernanceInterceptionService, GovernanceInterceptorContext
+from app.governance.interceptors.models import InterceptorDecision, InterceptorOutcome
 from app.governance.policies import PolicyEngineService
 from app.governance.registry import GovernanceRegistry
 from app.governance.restrictions import ExecutionRestrictionService, RestrictionViolation
@@ -20,6 +22,7 @@ class GovernanceService:
         approval_service: ApprovalService,
         audit_service: AuditService,
         dif_service: DIFService,
+        interception_service: GovernanceInterceptionService | None = None,
     ) -> None:
         self._settings = settings
         self._registry = registry
@@ -28,6 +31,7 @@ class GovernanceService:
         self._approval_service = approval_service
         self._audit_service = audit_service
         self._dif_service = dif_service
+        self._interception_service = interception_service
 
     async def evaluate(self, context: GovernanceContext) -> GovernanceDecision:
         policy_decision = await self._policy_engine.evaluate(context)
@@ -124,6 +128,39 @@ class GovernanceService:
 
     async def aclose(self) -> None:
         await self._audit_service.aclose()
+
+    async def intercept_pre_execution(self, context: GovernanceInterceptorContext) -> InterceptorDecision:
+        if self._interception_service is None:
+            decision = await self.evaluate(
+                GovernanceContext(
+                    trace_id=context.trace_id,
+                    agent_name=context.agent_name,
+                    conversation_id=context.conversation_id,
+                    message=context.message,
+                    requested_tool=context.requested_tool,
+                    tool_arguments=context.tool_arguments,
+                    metadata={
+                        **context.metadata,
+                        "governance_target": context.target,
+                        "interception_phase": context.phase,
+                        "workflow_name": context.workflow_name,
+                        "user_id": context.user_id,
+                        "role_names": list(context.role_names),
+                    },
+                )
+            )
+            return InterceptorDecision(
+                allowed=decision.allowed,
+                phase=context.phase,
+                target=context.target,
+                governance_decision=decision,
+            )
+        return await self._interception_service.intercept_pre_execution(context)
+
+    async def intercept_post_execution(self, context: GovernanceInterceptorContext) -> list[InterceptorOutcome]:
+        if self._interception_service is None:
+            return []
+        return await self._interception_service.intercept_post_execution(context)
 
     def _serialize_violation(self, violation: RestrictionViolation) -> dict[str, object]:
         return {

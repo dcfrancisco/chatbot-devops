@@ -12,6 +12,7 @@ from app.memory.session.service import SessionMemoryService
 from app.memory.summarization.service import MemorySummarizationService
 from app.llm.base import BaseLLMProvider
 from app.observability.service import ObservabilityService
+from app.observability.tracing.models import SpanKind
 
 
 class MemoryService:
@@ -34,19 +35,31 @@ class MemoryService:
         conversation_id: str,
         query: str,
     ) -> MemoryContext:
-        async with self._observability_service.span("memory.load_recent_messages", conversation_id=conversation_id):
+        async with self._observability_service.span(
+            "memory.load_recent_messages",
+            kind=SpanKind.MEMORY_RETRIEVAL,
+            component="memory",
+            conversation_id=conversation_id,
+        ):
             recent_messages = await self._session_service.load_recent_messages(
                 session,
                 conversation_id=conversation_id,
                 limit=self._settings.conversation_window_size,
             )
-        async with self._observability_service.span("memory.load_candidates", conversation_id=conversation_id):
+        async with self._observability_service.span(
+            "memory.load_candidates",
+            kind=SpanKind.MEMORY_RETRIEVAL,
+            component="memory",
+            conversation_id=conversation_id,
+        ):
             episodic_memories = await self._episodic_service.list_candidates(session, conversation_id=conversation_id)
             semantic_memories = await self._semantic_service.list_candidates(session, conversation_id=conversation_id)
             summary_memories = await self._summarization_service.list_summaries(session, conversation_id=conversation_id)
 
         async with self._observability_service.span(
             "memory.rank_relevance",
+            kind=SpanKind.MEMORY_RETRIEVAL,
+            component="memory",
             candidate_count=len(summary_memories) + len(semantic_memories) + len(episodic_memories),
         ):
             ranked = await self._relevance_service.rank(
