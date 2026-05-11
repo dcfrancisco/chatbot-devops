@@ -7,6 +7,7 @@ from app.observability.logging.service import StructuredLoggingService
 from app.observability.metrics.models import CounterMetric
 from app.observability.metrics.service import MetricsService
 from app.observability.telemetry.service import TelemetryService
+from app.observability.tracing.replay import TraceReplaySnapshot
 from app.observability.tracing.service import TracingService
 
 
@@ -43,6 +44,12 @@ class ObservabilityService:
 
     def current_correlation_id(self) -> str | None:
         return self._tracing_service.current_correlation_id()
+
+    def current_propagation_headers(self) -> dict[str, str]:
+        return self._tracing_service.current_propagation_headers()
+
+    async def get_trace_snapshot(self, trace_id: str) -> TraceReplaySnapshot | None:
+        return await self._tracing_service.get_trace_snapshot(trace_id)
 
     def increment(self, name: str, value: int = 1, **attributes: Any) -> None:
         self._metrics_service.increment(CounterMetric(name=name, value=value, attributes=attributes))

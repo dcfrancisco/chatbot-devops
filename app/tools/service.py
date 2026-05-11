@@ -13,6 +13,7 @@ from tenacity import AsyncRetrying, retry_if_exception_type, stop_after_attempt,
 from app.core.logging import get_logger
 from app.models.api import ToolExecutionError, ToolExecutionRequest, ToolExecutionResponse, ToolExecutionTrace
 from app.observability.service import ObservabilityService
+from app.observability.tracing.models import SpanKind
 from app.tools.base import ToolExecutionContext
 from app.tools.registry import ToolNotFoundError, ToolRegistry
 
@@ -84,7 +85,12 @@ class ToolExecutionService:
 
         try:
             result: dict[str, Any] | None = None
-            async with self._observability_service.span("tool.execution.attempts", tool_name=tool.name):
+            async with self._observability_service.span(
+                "tool.execution.attempts",
+                kind=SpanKind.TOOL_EXECUTION,
+                component="tools",
+                tool_name=tool.name,
+            ):
                 async for attempt in AsyncRetrying(
                     stop=stop_after_attempt(max(1, tool.retry_attempts)),
                     wait=wait_exponential(multiplier=0.5, min=0.5, max=4),

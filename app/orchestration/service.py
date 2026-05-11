@@ -8,6 +8,7 @@ from app.llm.base import BaseLLMProvider
 from app.memory.service import MemoryService
 from app.models.api import ChatRequest, ChatResponse
 from app.observability.service import ObservabilityService
+from app.orchestration.events import EventPublisher
 from app.orchestration.execution.service import TurnExecutionService
 from app.orchestration.lifecycle.service import OrchestrationLifecycleService
 from app.orchestration.planners.service import PromptAssemblyService
@@ -26,6 +27,7 @@ class OrchestrationService:
         tool_execution_service: ToolExecutionService,
         governance_service: GovernanceService,
         observability_service: ObservabilityService,
+        event_publisher: EventPublisher,
     ) -> None:
         self._execution_service = TurnExecutionService(
             settings=settings,
@@ -35,6 +37,7 @@ class OrchestrationService:
             tool_execution_service=tool_execution_service,
             governance_service=governance_service,
             observability_service=observability_service,
+            event_publisher=event_publisher,
             request_router=DeterministicRequestRouter(),
             prompt_assembly_service=PromptAssemblyService(),
             lifecycle_service=OrchestrationLifecycleService(),

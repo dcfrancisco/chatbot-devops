@@ -3,4 +3,5 @@ from app.workflows.base import BaseWorkflow
 
 
 class WorkflowRegistry(NamedRegistry[BaseWorkflow]):
-    pass
+    def default(self) -> BaseWorkflow:
+        return self.get("chat-turn")

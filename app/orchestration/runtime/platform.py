@@ -17,11 +17,13 @@ from app.llm.base import BaseLLMProvider
 from app.memory.service import MemoryService
 from app.observability.health import HealthService
 from app.observability.service import ObservabilityService
+from app.orchestration.events import EventBus, EventPublisher
 from app.orchestration.service import OrchestrationService
 from app.rag.ingestion import IngestionService
 from app.rag.retriever import RetrieverService
 from app.tools.registry import ToolRegistry
 from app.tools.service import ToolExecutionService
+from app.workflows.engine import WorkflowEngine, WorkflowService
 from app.workflows.registry import WorkflowRegistry
 
 
@@ -44,13 +46,18 @@ class RuntimePlatform:
     governance_registry: GovernanceRegistry
     governance_service: GovernanceService
     observability_service: ObservabilityService
+    event_bus: EventBus
+    event_publisher: EventPublisher
     workflow_registry: WorkflowRegistry
+    workflow_engine: WorkflowEngine
+    workflow_service: WorkflowService
     knowledge_registry: KnowledgeRegistry
     knowledge_loader_registry: KnowledgeLoaderRegistry
     knowledge_sync_registry: KnowledgeSyncRegistry
     knowledge_service: KnowledgeManagementService
 
     async def aclose(self) -> None:
+        await self.event_bus.aclose()
         await self.observability_service.aclose()
         await self.provider_registry.aclose()
         await self.governance_service.aclose()

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents.registry import AgentRegistry
 from app.models.api import ChatRequest, ChatResponse
 from app.observability.service import ObservabilityService
+from app.observability.tracing.models import SpanKind
 
 
 class ChatService:
@@ -20,13 +21,23 @@ class ChatService:
 
     async def chat(self, session: AsyncSession, request: ChatRequest) -> ChatResponse:
         agent_name = request.agent_name or self._default_agent_name
-        async with self._observability_service.span("agent.run", agent_name=agent_name):
+        async with self._observability_service.span(
+            "agent.run",
+            kind=SpanKind.AGENT_EXECUTION,
+            component="agents",
+            agent_name=agent_name,
+        ):
             agent = self._agent_registry.get(agent_name)
             return await agent.run(session, request)
 
     async def stream_chat(self, session: AsyncSession, request: ChatRequest) -> AsyncIterator[str]:
         agent_name = request.agent_name or self._default_agent_name
-        async with self._observability_service.span("agent.stream", agent_name=agent_name):
+        async with self._observability_service.span(
+            "agent.stream",
+            kind=SpanKind.AGENT_EXECUTION,
+            component="agents",
+            agent_name=agent_name,
+        ):
             agent = self._agent_registry.get(agent_name)
             async for event in agent.stream(session, request):
                 yield event

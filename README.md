@@ -2,17 +2,39 @@
 
 Production-ready FastAPI backend for a local AI DevOps assistant with PostgreSQL, pgvector, SQLAlchemy, Ollama, structured logging, modular tools, streaming chat responses, and document ingestion for retrieval augmented generation.
 
-## Architecture
+## Project Structure
 
-- `app/api/` HTTP endpoints and dependency wiring
-- `app/services/` chat, LLM, Jenkins, and health services
-- `app/services/orchestration_service.py` lightweight retrieval-first orchestration
-- `app/rag/` chunking, ingestion, and retrieval logic
-- `app/db/` SQLAlchemy models and async session management
-- `app/models/` API and LLM data models
-- `app/tools/` tool registry and executable tools
-- `app/core/` configuration, logging, and service container
+The active Python package root is `app/`. This repository does not use a `src/chatbot_devops` layout.
+
+```text
+app/
+├── agents/          agent entrypoints and registry
+├── api/             FastAPI routes, router, and dependencies
+├── core/            settings, logging, and container composition
+├── db/              SQLAlchemy models, base, and session management
+├── governance/      policy, approvals, restrictions, DIF, and interceptors
+├── integrations/    explicit external service integrations
+├── knowledge/       knowledge source loading, indexing, and sync
+├── llm/             provider routing, prompts, models, and guardrails
+├── memory/          session, episodic, semantic, summary, and relevance logic
+├── models/          API and LLM request/response models
+├── observability/   logging, metrics, telemetry, and tracing
+├── orchestration/   execution pipeline, events, context, and state machine
+├── prompts/         prompt assets
+├── rag/             ingestion, chunking, parsing, and retrieval
+├── shared/          registries and registration helpers
+├── tools/           modular tool framework and tool implementations
+├── workflows/       workflow definitions, execution, state, and templates
+└── services/        compatibility shims over the modular runtime services
+```
+
+Additional top-level structure:
+
 - `alembic/` database migrations
+- `docker/` container-specific assets
+- `docs/` architecture and migration documentation
+- `assets/` local ingestion seed content
+- `streamlit_app.py` Streamlit operator UI entrypoint
 
 ## Key Docs
 
