@@ -2,6 +2,61 @@
 
 This repository is no longer modeled as a single chatbot backend. The runtime now follows a platform shape: API surface, orchestration engine, agent registry, tool registry, governance registry, workflow registry, retrieval, memory, and integration modules remain independently evolvable while preserving the current FastAPI and pgvector behavior.
 
+## AI Engineering Workflow
+
+The current architecture direction is a strong fit for repository-aware coding agents, not generic prompt-only assistants.
+
+The best fit for this codebase is:
+
+- GitHub Copilot Agent Mode with repository instructions and architecture-aware prompts for day-to-day engineering
+- Cursor for architecture-heavy refactors and rapid repo-wide change exploration
+- Claude Code for deep architecture generation, orchestration design, and system-level reasoning
+
+This recommendation follows from the current platform shape:
+
+- modular runtime boundaries
+- registry-driven composition
+- orchestration lifecycle control
+- governance and approval seams
+- observability and tracing as platform capabilities
+- long-running repo evolution instead of one-shot scripts
+
+Copilot is useful here only when it operates with explicit repository constraints. Plain autocomplete is not enough for this runtime. The effective mode is:
+
+```text
+Copilot Agent Mode
++ repository instructions
++ architecture prompts
++ modular boundaries
+```
+
+That works because the codebase now exposes stable structure and constraints to the agent:
+
+- agents
+- orchestration
+- governance
+- observability
+- workflows
+- registries and interfaces
+
+Without those boundaries, repository-scale AI coding becomes noisy. With them, the agent can evolve the runtime while preserving platform seams.
+
+## Repository-Level Governance For AI Coding
+
+This repository now needs instruction-driven governance for AI-assisted development in the same way the runtime needs governance for execution.
+
+Repository-level AI instructions should enforce rules like:
+
+- agents do not directly call APIs
+- agents use tools through orchestrator services
+- tools must not contain orchestration logic
+- governance interceptors validate execution before runtime actions proceed
+- `ExecutionContext` propagates through orchestration stages
+- runtime flows emit execution events and traces
+- new features extend existing domain packages instead of creating parallel architectures
+
+This is the difference between using AI as autocomplete and using AI as a constrained systems-engineering assistant.
+
 ## Target Folder Structure
 
 ```text

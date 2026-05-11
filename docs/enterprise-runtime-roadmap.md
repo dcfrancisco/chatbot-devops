@@ -13,6 +13,60 @@ It assumes the current baseline already exists:
 
 The roadmap is intentionally phased. Each phase has a clear architectural outcome, dependency ordering, and a realistic milestone boundary so the platform can keep shipping while the architecture matures.
 
+## Engineering Workflow Guidance
+
+This platform is now in an AI systems engineering phase, not a chatbot-building phase. That changes the recommended development tooling.
+
+For the current state of the repo:
+
+- Cursor is the strongest primary tool for architecture evolution, major refactors, and prompt-heavy repository changes while the design is still moving
+- Claude Code is a strong secondary tool for deep orchestration, architecture generation, and system-level reasoning
+- GitHub Copilot Agent Mode is the best fit for the ongoing engineering workflow once changes are grounded in repository instructions and architectural boundaries
+
+The distinction matters.
+
+Use GitHub Copilot here as:
+
+```text
+Copilot Agent Mode
++ repository instructions
++ architecture prompts
++ modular boundaries
+```
+
+Do not treat plain autocomplete as the development model for this repo. The platform now has enough modularity, governance, and runtime lifecycle structure that repository-aware agent workflows are materially better than isolated prompt generation.
+
+## Tooling Recommendation By Stage
+
+During active architecture evolution:
+
+- primary: Cursor
+- secondary: Claude Code
+- supporting: GitHub Copilot Agent Mode
+
+During ongoing engineering after architectural stabilization:
+
+- primary: GitHub Copilot Agent Mode
+- secondary: Cursor
+- supporting: Claude Code
+
+Avoid generic AI app builders, no-code wrappers, drag-and-drop orchestration tools, and generic agent builders. They are below the level of control now required by this runtime.
+
+## Repository Instruction Milestone
+
+As the runtime matures, repository-level AI governance becomes part of platform quality.
+
+Add and maintain repository instructions that encode:
+
+- architecture boundaries
+- orchestration rules
+- governance constraints
+- dependency rules
+- execution context propagation rules
+- event and trace emission requirements
+
+This should be treated as part of the platform control plane for engineering, not as optional editor metadata.
+
 ## Planning Principles
 
 - keep the default runtime local-first and retrieval-first
